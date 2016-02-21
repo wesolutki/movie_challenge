@@ -21,7 +21,7 @@ def get_video(video):
 
 def get_trailers(id):
     print "Getting trailers for id: " + str(id);
-    return [get_video(video) for video in tm.movies.Movies(id=603).videos()['results']  if 'Trailer' in video['name']]
+    return [get_video(video) for video in tm.movies.Movies(id=id).videos()['results']  if 'Trailer' in video['name']]
 
 def update_movie(movie):
     id = movie['id']
@@ -35,7 +35,11 @@ def update_videos(data):
         update_movie(movie)
 
 def read_movie_list():
+    global movies
     movies = cPickle.load(open(MOVIE_FILE_PATH))
+    movies = dict([[movieKey, movies[movieKey]] for movieKey in movies.keys() if movies[movieKey]['trailers']])
+    count = len(movies)
+    print count
 
 def save_movie_list():
     cPickle.dump(movies, open(MOVIE_FILE_PATH, 'w'))
@@ -70,18 +74,18 @@ def getMovieTrailer(title):
             if len(trailers):
                 return trailers[0]
     return None
-    
-def getRandomWithout(without):
-    movies
 
 def getRandomTrailer():
-    count = len(movies)
+    global movies
     movie_list = []
     while len(movie_list) < 4:
-        movie = movies[movies.keys()[random.randint(0, count -1)]]
-        if movie['title'] not in movie_list:
+        count = len(movies)
+        id = movies.keys()[random.randint(0, count - 1)]
+        movie = movies[id]
+        if movie['title'] not in [m['title'] for m in movie_list]:
+            print movie
             movie_list.append({
-                'id': movie['id'],
+                'id': id,
                 'title': movie['title'],
                 'status': 'bad'
                 })
@@ -90,7 +94,10 @@ def getRandomTrailer():
     movie_list[0]['status'] = 'good'
     shuffle(movie_list)
     
-    return {
+    ret = json.dumps({
         'quiz': movie_list,
         'trailer': trailer
-        }
+        })
+    
+    print ret
+    return ret

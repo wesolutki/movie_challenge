@@ -16,6 +16,5 @@ try:
 except Exception as e:
     print "Unexpected error:", str(e)
     traceback.print_stack()
-    if httpd:
-        httpd.server_close()
+    httpd.close_server()
     raise
