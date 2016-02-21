@@ -13,7 +13,7 @@ body{
 #main{
     position: fixed;
     height: 100%;
-    background-image: url("../img/bg.jpg");
+    background-image: url("../img/nowe_tlo.jpg");
     background-size: cover;
 }
 
@@ -49,4 +49,13 @@ body{
 
 .counting{
     z-index: -10;
+}
+
+.trailer{
+    z-index: -9;
+    width: auto;
+    height: auto;
+    /*width: 72%;
+    height: 42%;
+    margin: 1% 14%;*/
 }

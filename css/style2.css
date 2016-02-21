@@ -1,0 +1,41 @@
+#main{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 1920px;
+    height: 1080px;
+}
+
+#main *{
+    position: absolute;
+    width: 100%;
+}
+
+#player {
+    width: 72%;
+    margin: 0 14%;
+}
+
+#answers {
+    height: 100%;
+    width: 100%;
+}
+
+#camera {
+    bottom: 0;
+}
+
+/*
+#noise {
+    z-index: 0;
+}
+
+#frame {
+    z-index: -;
+}
+
+#player {
+    z-index: -50;
+}*/
