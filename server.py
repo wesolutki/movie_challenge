@@ -2,7 +2,7 @@
 
 #import SimpleHTTPServer
 import SocketServer
-import HTTPServer
+import src.HTTPServer as HTTPServer
 import sys
 import traceback
 
@@ -16,5 +16,6 @@ try:
 except Exception as e:
     print "Unexpected error:", str(e)
     traceback.print_stack()
-    httpd.server_close()
+    if httpd:
+        httpd.server_close()
     raise

@@ -1,6 +1,8 @@
 import SimpleHTTPServer
 import movie
 
+movie.read_movie_list()
+
 class HTTPServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def main_page(self):
         file = open("../Web/index.html").read()
