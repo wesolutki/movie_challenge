@@ -4,7 +4,7 @@ $( document ).ready(function() {
 
 $( window ).load(function() {
     console.log( "window loaded" );
-        $("#answers button").each(function(i) {
+        $("#answers .answer").each(function(i) {
             var but = $(this);
             this.addEventListener("click", function (e) {
                 var target = e.target;
@@ -12,17 +12,23 @@ $( window ).load(function() {
                 console.log(target);
                 if (target.value == 'bad') {
                     $(target).addClass('fail');
+                    $("#color-info").addClass('red');
                     setTimeout(function() {
                         $(target).removeClass('fail');
+                    $("#color-info").removeClass('red');
                     }, 1000);
+                    nextQuiz("bad");
                 }
                 if (target.value == 'good') {
                     console.log(e.target);
+                    available_seconds += 5.0;
                     $(target).addClass('success');
+                    $("#color-info").addClass('green');
                     setTimeout(function() {
                         $(target).removeClass('success');
+                    $("#color-info").removeClass('green');
                     }, 1000);
-                    nextQuiz();
+                    nextQuiz("good");
                 }
             });
         });
@@ -42,9 +48,9 @@ var player;
       //    after the API code downloads.
       var player;
       function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-          height: '640',
-          width: '480',
+        player = new YT.Player('youtube_player', {
+          width: '700',
+          height: '500',
           events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange,
@@ -54,10 +60,11 @@ var player;
       }
       
 
-function nextQuiz() {
-    $.getJSON( "/quiz", function( data ) {
+    var gameId = 0;
+function nextQuiz(resp) {
+    $.getJSON( "/quiz/" + gameId + "/" + resp, function( data ) {
         id = data['trailer'];
-        $("#answers button").each(function(i) {
+        $("#answers .answer").each(function(i) {
             console.log("For button " + data['quiz'][i]['title']);
             var but = $(this);
             this.value = data['quiz'][i]['status'];
@@ -120,14 +127,18 @@ function nextQuiz() {
 function onError(event) {
     console.log("Error: " + event);
     console.log(event);
-    nextQuiz();
+    nextQuiz("error");
 }
 
 // 4. The API will call this function when the video player is ready.
 function onPlayerReady(event) {
     player = event.target;
-    console.log(event);
-    nextQuiz();
+    console.log("Sending hello: " + event);
+    
+    $.getJSON( "/hello", function( data ) {
+        gameId = data['gameId'];
+        nextQuiz("init");
+    });
 }
 
       // 5. The API calls this function when the player's state changes.
@@ -136,7 +147,7 @@ function onPlayerReady(event) {
       var done = false;
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.ENDED) {
-            nextQuiz();
+            nextQuiz("init");
         }
         /*if (event.data == YT.PlayerState.PLAYING && !done) {
           setTimeout(stopVideo, 6000);

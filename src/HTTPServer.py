@@ -1,15 +1,25 @@
 import SimpleHTTPServer
 import movie
+import game
+
+import json
 
 movie.read_movie_list()
 print len(movie.movies)
 
 class HTTPServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def dispatch(self, path):
-        if "/hello" == path:
-            return "{userId: 18754875}"
-        elif "/quiz" == path:
-            return movie.getRandomTrailer()
+        params = path.split('/')
+        print params
+        if "hello" == params[1]:
+            return json.dumps({"gameId": game.add_new_game(self.client_address[0])})
+        elif 'quiz' == params[1]:
+            gameId = int(params[2])
+            game.GAMES[gameId].process_answer(params[3])
+            return game.GAMES[gameId].get_random_quiz()
+        elif 'game_over':
+            gameId = int(params[2])
+            return game.GAMES[gameId].get_random_quiz()
         return None
     
     def handle_quote(self, path):
@@ -21,5 +31,4 @@ class HTTPServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         self.handle_quote(self.path)
-        #self.wfile.write(self.handle_quote(self.path))
-        #self.wfile.write("<iframe width='560' height='315' src='https://www.youtube.com/embed/" + movie.getRandomTrailer() + "?autoplay=1' frameborder='0' allowfullscreen></iframe>")
+

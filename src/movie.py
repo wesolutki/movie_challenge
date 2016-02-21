@@ -11,9 +11,7 @@ from time import sleep
 MOVIE_API_KEY = 'ae35231a48a01b1923fa9c885cae9d47'
 MOVIE_FILE_PATH = './movies.txt'
 movies = {}
-  
-#movieApiUrl = 'http://api.themoviedb.org/3/'
-#movieApiKey = 'ae35231a48a01b1923fa9c885cae9d47'
+
 
 def get_video(video):
     sleep(0.5)
@@ -101,3 +99,9 @@ def getRandomTrailer():
     
     print ret
     return ret
+
+def deleteMovie(id):
+    movies.pop(id, None)
+    save_movie_list()
+
+    
