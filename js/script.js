@@ -115,7 +115,7 @@ function gameOver() {
         if (data['upperList'].length === 0) {
             $("#final_result_span").text(data['currentElement'][0] + " YOU ARE THE BEST");
         } else {
-            $("#final_result_span").text(data['currentElement'][0]);
+            $("#final_result_span").text(data['currentElement'][0] + " YOU ARE " + data['currentElement'][3] + " IN THE WORLD");
         }
     });
 }
@@ -249,6 +249,12 @@ var player;
         player = new YT.Player('youtube_player', {
           width: '700',
           height: '500',
+          playerVars: {
+				controls:0,
+				iv_load_policy:3,
+				modestbranding:1,
+				showinfo:0
+		  },
           events: {
             'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange,
