@@ -30,10 +30,10 @@ class game:
     def process_answer(self, answer):
         print "Answer: " + answer
         if 'good' == answer:
-            self.good_answers_in_row += 1
             self.score += 100 * self.good_answers_in_row
+            self.good_answers_in_row += 1
         elif 'bad' == answer:
-            self.good_answers_in_row = 0
+            self.good_answers_in_row = 1
             self.lifes -= 1
         elif 'error' == answer:
             movie.deleteMovie(self.currentMovieId)
@@ -65,7 +65,8 @@ class game:
             'quiz': movie_list,
             'trailer': trailer,
             'points': self.score,
-            'lifes': self.lifes
+            'lifes': self.lifes,
+            'multiplayer': self.good_answers_in_row
             })
     
         print ret
@@ -76,28 +77,36 @@ class game:
         self.endTime = time.time()
         
         current_element = [self.score, self.endTime, self.country]
-        SCORES.append(current_element)
+        SCORES.append([self.score, self.endTime, self.country])
         def sortScores(itemL, itemR):
             if itemL[0] != itemR[0]:
                 return itemR[0] - itemL[0]
-            return itemR[1] - itemL[1]
+            return itemR[1] < itemL[1]
         SCORES = sorted(SCORES, cmp=sortScores)
+        
         save_score_list()
         index = SCORES.index(current_element)
         
+        print "Index: ", index
+        
         upperList = []
         lowerList = []
-        if 5 <= index:
+        if 0 == index:
+            lowerList = SCORES[index + 1 : 10]
+        elif 5 >= index:
             upperList = SCORES[:index]
             lowerList = SCORES[index + 1 : 10]
+        elif len(SCORES) < index + 5:
+            upperList = SCORES[ len(SCORES) - index - 11: index]
+            lowerList = SCORES[index + 1 :]
         else:
-            upperList = SCORES[index - 5 : index]
+            upperList = SCORES[index - 5 : index ]
             lowerList = SCORES[index + 1 : index + 6]
             
-        upperList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d %H:%M:%S'), e[2]] for e in upperList]
-        lowerList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d %H:%M:%S'), e[2]] for e in lowerList]
-        current_element[1] = datetime.datetime.fromtimestamp(current_element[1]).strftime('%Y-%m-%d %H:%M:%S')
-        
+        upperList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d'), e[2]] for e in upperList]
+        lowerList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d'), e[2]] for e in lowerList]
+        current_element[1] = datetime.datetime.fromtimestamp(current_element[1]).strftime('%Y-%m-%d')
+        current_element.append(index)
         
         print 'Game over'
         print upperList

@@ -1,3 +1,37 @@
+;(function(){
+  function id(v){ return document.getElementById(v); }
+  function loadbar() {
+    var ovrl = id("overlay"),
+        prog = id("progress"),
+        stat = id("progstat"),
+        img = document.images,
+        c = 0,
+        tot = img.length;
+    if(tot === 0) return doneLoading();
+
+    function imgLoaded(){
+      c += 1;
+      var perc = ((100/tot*c) << 0) +"%";
+      prog.style.width = perc;
+      stat.innerHTML = "Loading Movie Challenge "+ perc;
+      if(c===tot) return doneLoading();
+    }
+    function doneLoading(){
+      ovrl.style.opacity = 0;
+      setTimeout(function(){ 
+        ovrl.style.display = "none";
+      }, 1200);
+    }
+    for(var i=0; i<tot; i++) {
+      var tImg     = new Image();
+      tImg.onload  = imgLoaded;
+      tImg.onerror = imgLoaded;
+      tImg.src     = img[i].src;
+    }    
+  }
+  document.addEventListener('DOMContentLoaded', loadbar, false);
+}());
+
 $( document ).ready(function() {
     console.log( "ready!" );
 }); 
@@ -13,31 +47,55 @@ function displayTime(seconds) {
 var available_seconds = 30.0;
 var lifes_left = 5;
 var time_interval;
+var changing_video = false;
 
 function restartChallenge() {
     console.log("restartChallenge");
     
-    console.log("Sending hello: " + event);
     $.getJSON( "/hello", function( data ) {
-        gameId = data['gameId'];
-        nextQuiz("init");
+        countdown = $("#countdown");
+        countdown.attr('src', "");
+        countdown.css("display", "block");
+        countdown.attr('src', "img/odliczamy.gif");
         
         available_seconds = 30.0;
-        var start_time = getTime();
-        if (time_interval) {
-            clearInterval(time_interval);
-        }
-        
         var time_left = $("#time_left");
-        time_interval = setInterval(function(){
-            seconds_left = available_seconds - (getTime() - start_time)/1000;
-            time_left.text(displayTime(seconds_left));
-            if (seconds_left <= 0.0) {
-                stopVideo();
+        time_left.text(displayTime(available_seconds));
+        
+        setTimeout(function() {
+            countdown.css("display", "none");
+            
+            gameId = data['gameId'];
+            nextQuiz("init");
+            
+            var start_time = getTime();
+            if (time_interval) {
                 clearInterval(time_interval);
-                gameOver();
             }
-        }, 100);
+            
+            time_interval = setInterval(function(){
+                seconds_left = available_seconds - (getTime() - start_time)/1000;
+                time_left.text(displayTime(seconds_left));
+                if (seconds_left <= 0.0) {
+                    stopVideo();
+                    clearInterval(time_interval);
+                    gameOver();
+                }
+            }, 100);
+            
+        }, 3500);
+    });
+}
+
+function fillScoreList(divName, data) {
+    
+    upperListDiv = $("#" + divName);
+    upperListDiv.empty();
+    upperList = data;
+    $.each(upperList, function (i) {
+        upperListDiv.append('<div class="score">' + '<span class="score_score">' + this[0] + '</span>' + 
+                            '<span class="score_nationality">' + this[2] + '</span>' + 
+                            '<span class="score_date">' + this[1] + '</span>' + '</div>');
     });
 }
 
@@ -52,11 +110,51 @@ function gameOver() {
     
     $.getJSON( "/game_over/" + gameId, function( data ) {
         console.log("Gameover: " + JSON.stringify(data));
+        fillScoreList('upper_list', data['upperList']);
+        fillScoreList('lower_list', data['lowerList']);
+        if (data['upperList'].length === 0) {
+            $("#final_result_span").text(data['currentElement'][0] + " YOU ARE THE BEST");
+        } else {
+            $("#final_result_span").text(data['currentElement'][0]);
+        }
+    });
+}
+
+    
+function nextQuiz(resp) {
+    $.getJSON( "/quiz/" + gameId + "/" + resp, function( data ) {
+        console.log("Next quiz: " + JSON.stringify(data));
+        id = data['trailer'];
+        lifes_left = data['lifes'];
+        $("#multiplier").text('x' + data['multiplayer']);
+        $("#lifes_left img").each(function(i) {
+            if (i < lifes_left) {
+                $(this).show(1000);
+            } else {
+                $(this).hide(1000);
+            }
+        });
+        
+        $("#answers .answer").each(function(i) {
+            console.log("For button " + data['quiz'][i]['title']);
+            var but = $(this);
+            this.value = data['quiz'][i]['status'];
+            but.text(data['quiz'][i]['title']);
+            $("#points").text(data['points']);
+        });  
+            
+        player.loadVideoById(id, 15, "large");
+        player.playVideo();
+        
+        changing_video = false;
+        $(".answer_div").show(500);
     });
 }
 
 $( window ).load(function() {
     console.log( "window loaded" );
+    
+    $('#overlay').fadeOut();
     
     function centerModal() {
         console.log("centerModal");
@@ -85,8 +183,12 @@ $( window ).load(function() {
         $("#answers .answer").each(function(i) {
             var but = $(this);
             this.addEventListener("click", function (e) {
+                if (changing_video) {
+                    return;
+                }
+                changing_video = true;
+                $(".answer_div").hide(500);
                 var target = e.target;
-                console.log("target : ");
                 console.log(target);
                 if (target.value == 'bad') {
                     $(target).addClass('fail');
@@ -103,7 +205,6 @@ $( window ).load(function() {
                     }
                 }
                 if (target.value == 'good') {
-                    console.log(e.target);
                     available_seconds += 5.0;
                     $(target).addClass('success');
                     $("#color-info").css("background-color", "green");
@@ -116,16 +217,24 @@ $( window ).load(function() {
             });
         });
         
-    
-    var counter = 0;
     setInterval(function() {
-        img_num = counter%8;
-        if (img_num !== 2) {
-            console.log(img_num);
-            $("#noise").css("top", "-" + (img_num * 100) + "%");
+        img_num = parseInt(Math.random() * 8, 10);
+        $("#noise").css("top", "-" + (img_num * 100) + "%");
+        if (Math.random() >= 0.5) {
+            $("#noise").css("transform", "scale(1,-1)");
         }
-        counter+=1;
+        if (Math.random() >= 0.5) {
+            $("#noise").css("transform", "scale(-1,1)");
+        }
     }, 200);
+    
+    function blinker() {
+        result = $("#final_result_span");
+        result.fadeOut(500);
+        result.fadeIn(500);
+    }
+
+    setInterval(blinker, 1000);
 });
 
 var player;
@@ -136,7 +245,6 @@ var player;
       var firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-      var player;
       function onYouTubeIframeAPIReady() {
         player = new YT.Player('youtube_player', {
           width: '700',
@@ -151,30 +259,6 @@ var player;
       
 
     var gameId = 0;
-function nextQuiz(resp) {
-    $.getJSON( "/quiz/" + gameId + "/" + resp, function( data ) {
-        id = data['trailer'];
-        lifes_left = data['lifes'];
-        $("#lifes_left img").each(function(i) {
-            if (i < lifes_left) {
-                $(this).show(1000);
-            } else {
-                $(this).hide(1000);
-            }
-        });
-        
-        $("#answers .answer").each(function(i) {
-            console.log("For button " + data['quiz'][i]['title']);
-            var but = $(this);
-            this.value = data['quiz'][i]['status'];
-            but.text(data['quiz'][i]['title']);
-            $("#points").text(data['points']);  
-            
-            player.loadVideoById(id, 15, "large");
-            player.playVideo();
-        });
-    });
-}
 
 function onError(event) {
     console.log("Error: " + event);

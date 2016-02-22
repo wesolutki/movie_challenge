@@ -5,7 +5,7 @@ import game
 import json
 
 movie.read_movie_list()
-#game.read_score_list()
+game.read_score_list()
 print 'Movies count: ' + str(len(movie.movies))
 print 'Scores count: ' + str(len(game.SCORES))
 
