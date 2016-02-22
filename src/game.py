@@ -4,14 +4,17 @@ import random
 import urllib
 import datetime
 import time
+import cPickle
 from random import shuffle
 from geoip import geolite2
 
 movie.read_movie_list()
 print len(movie.movies)
 
+SCORES_FILE_PATH = "./scores.txt"
 INITIAL_ID = 0
 GAMES = {}
+SCORES = []
 
 class game:
     def __init__(self, country):
@@ -65,21 +68,65 @@ class game:
             'lifes': self.lifes
             })
     
+        print ret
         return ret
         
     def get_game_over_data(self):
-        d = datetime.datetime.fromtimestamp(time.time())
+        global SCORES
+        self.endTime = time.time()
         
-        datetime.Date
+        current_element = [self.score, self.endTime, self.country]
+        SCORES.append(current_element)
+        def sortScores(itemL, itemR):
+            if itemL[0] != itemR[0]:
+                return itemR[0] - itemL[0]
+            return itemR[1] - itemL[1]
+        SCORES = sorted(SCORES, cmp=sortScores)
+        save_score_list()
+        index = SCORES.index(current_element)
+        
+        upperList = []
+        lowerList = []
+        if 5 <= index:
+            upperList = SCORES[:index]
+            lowerList = SCORES[index + 1 : 10]
+        else:
+            upperList = SCORES[index - 5 : index]
+            lowerList = SCORES[index + 1 : index + 6]
+            
+        upperList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d %H:%M:%S'), e[2]] for e in upperList]
+        lowerList = [[e[0], datetime.datetime.fromtimestamp(e[1]).strftime('%Y-%m-%d %H:%M:%S'), e[2]] for e in lowerList]
+        current_element[1] = datetime.datetime.fromtimestamp(current_element[1]).strftime('%Y-%m-%d %H:%M:%S')
+        
+        
+        print 'Game over'
+        print upperList
+        print current_element
+        print lowerList
+        
         ret = json.dumps({
-            'points': self.score,
-            'timeStamp': self.timeStamp,
-            'country': self.country
+            'upperList': upperList,
+            'currentElement': current_element,
+            'lowerList': lowerList
             })
     
         return ret
         
+def get_best_scores(count):
+    pass
 
+def get_score_with_surroundings(count):
+    pass
+        
+
+def read_score_list():
+    global SCORES
+    SCORES = cPickle.load(open(SCORES_FILE_PATH))
+
+def save_score_list():
+    cPickle.dump(SCORES, open(SCORES_FILE_PATH, 'w'))
+    
+    
 def add_new_game(ip):
     print "Ip address: " + ip
     match = geolite2.lookup(ip)

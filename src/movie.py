@@ -14,7 +14,7 @@ movies = {}
 
 
 def get_video(video):
-    sleep(0.5)
+    sleep(0.2)
     return video['key']
 
 def get_trailers(id):

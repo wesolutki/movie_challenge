@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Music Challenge</title>
+    <title>Movie Challenge</title>
     <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
     
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -15,18 +15,34 @@
 <body>
 
 <div id="wrapper">
-    
     <div id="main">
         <div id="player">
             <div id="youtube_player"></div>
             <div id="color-info"></div>
+            <div id="noise">
+                <img src="img/tlo_0.png"/>
+                <img src="img/tlo_1.png"/>
+                <img src="img/tlo_3.png"/>
+                <img src="img/tlo_4.png"/>
+                <img src="img/tlo_5.png"/>
+                <img src="img/tlo_6.png"/>
+                <img src="img/tlo_7.png"/>
+                <img src="img/tlo_8.png"/>
+            </div>
         </div>
         <img id="frame" src="img/ramka_starzona.gif"/>
         <img id="frame_top" src="img/ramka_starzona.gif"/>
         <img id="frame_bottom" src="img/ramka_starzona.gif"/>
         
-        <div id="points">Example points</div>
-        <div id="time_left">Time left</div>
+        <div id="points">Points</div>
+        <div id="lifes_left">
+            <img src="img/life.png"/>
+            <img src="img/life.png"/>
+            <img src="img/life.png"/>
+            <img src="img/life.png"/>
+            <img src="img/life.png"/>
+        </div>
+        <div id="time_left">Time</div>
         <div id="answers">
             <div class="answer_div">
                 <span class="answer">?</span>
@@ -42,9 +58,27 @@
             </div>
         </div>
     </div>
-    
 </div>
 
+<div id="main-menu" class="modal fade">
+    <div class="modal-inside">
+        <button id="start-challenge" type="button" class="btn btn-xlarge btn-success" data-dismiss="modal" data-target="#main-menu">START CHALLENGE</button>
+    </div>
+</div>
+
+<div id="game-over" class="modal fade">
+    <div class="modal-inside">
+        <button id="game-over-info" type="button" class="btn btn-xlarge btn-danger">GAME OVER!</button>
+        <br>
+        <button id="once-again" type="button" class="btn btn-xlarge btn-success" data-dismiss="modal" data-target="#game-over">ONCE AGAIN</button>
+        <div>My result: <span id="#final_result">Final result</span></div>
+        <div>score1</div>
+        <div>score2</div>
+        <div>score3</div>
+        <div>score4</div>
+    </div>
+</div>
+    
 </body>
 
 </html>

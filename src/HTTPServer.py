@@ -5,7 +5,9 @@ import game
 import json
 
 movie.read_movie_list()
-print len(movie.movies)
+#game.read_score_list()
+print 'Movies count: ' + str(len(movie.movies))
+print 'Scores count: ' + str(len(game.SCORES))
 
 class HTTPServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def dispatch(self, path):
@@ -17,9 +19,9 @@ class HTTPServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
             gameId = int(params[2])
             game.GAMES[gameId].process_answer(params[3])
             return game.GAMES[gameId].get_random_quiz()
-        elif 'game_over':
+        elif 'game_over' == params[1]:
             gameId = int(params[2])
-            return game.GAMES[gameId].get_random_quiz()
+            return game.GAMES[gameId].get_game_over_data()
         return None
     
     def handle_quote(self, path):
